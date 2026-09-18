@@ -14,22 +14,23 @@
 ## 1. Код і дані на сервер
 
 ```bash
-# з локальної машини, з кореня проєкту: код
-rsync -av --exclude data --exclude backups --exclude '*.duckdb' --exclude '.env*' \
-      ./ user@SERVER:/opt/comms/
+# код
+sudo mkdir -p /opt/comms && sudo chown $USER /opt/comms
+git clone https://github.com/andrii-kondratok/comms-product-data.git /opt/comms
 
-# дані для разового завантаження історії (~250 МБ), лише потрібні файли
-ssh user@SERVER 'mkdir -p /opt/comms/deploy/data/processed /opt/comms/deploy/data/raw/notion'
-rsync -av data/processed/{pg_article,training_pairs,training_pairs_todo,sitemaps,candidate_pool_export}.csv \
-      user@SERVER:/opt/comms/deploy/data/processed/
-rsync -av data/raw/{fetched_articles,newscatcher_v3}.jsonl user@SERVER:/opt/comms/deploy/data/raw/
-rsync -av data/raw/notion/_pm_live.json user@SERVER:/opt/comms/deploy/data/raw/notion/
+# дані для разового завантаження історії — архів comms-data-2026-09-18.tar.gz
+# (61 МБ, передається окремо від GitHub: там повні тексти статей і постів)
+sha256sum comms-data-2026-09-18.tar.gz
+# має бути f6a7890652f5939b2cd01a4339dad44d941c80913e327a673e00d50d6a133bcb
+mkdir -p /opt/comms/deploy/data /opt/comms/deploy/backups
+tar -xzf comms-data-2026-09-18.tar.gz -C /opt/comms/deploy/data
 
 # том data монтується у воркер від користувача postgres (uid 999)
-ssh user@SERVER 'sudo chown -R 999:999 /opt/comms/deploy/data && mkdir -p /opt/comms/deploy/backups && sudo chown 999:999 /opt/comms/deploy/backups'
+sudo chown -R 999:999 /opt/comms/deploy/data /opt/comms/deploy/backups
 ```
 
-Якщо на машині немає rsync (Windows), те саме можна зробити через `scp`.
+Усередині архіву `processed/` і `raw/`: статті з текстами, пари, пул кандидатів,
+знімок Post Metrics і кеш тіл Content Pulse (щоб воркер збагачення не качав їх заново).
 
 ## 2. Секрети
 
