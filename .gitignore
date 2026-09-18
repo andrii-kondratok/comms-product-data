@@ -1,0 +1,29 @@
+# Секрети: ключі API, токени, сервісні акаунти
+.secrets/
+.env
+.env.*
+!.env.example
+deploy/.env
+!deploy/.env.example
+
+# Дані: повні тексти чужих статей і постів — не в git, передаються окремо (див. deploy/DEPLOY.md)
+data/
+deploy/data/
+backups/
+deploy/backups/
+*.duckdb
+*.duckdb.wal
+*.dump
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Службове
+.claude/
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

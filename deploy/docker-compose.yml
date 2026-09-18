@@ -1,0 +1,55 @@
+# Comms Product: база + щоденний конвеєр.
+#   docker compose --env-file .env up -d --build
+# Postgres слухає лише localhost сервера — доступ ззовні через SSH-тунель.
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-comms}
+      POSTGRES_USER: ${POSTGRES_USER:-comms}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?задайте POSTGRES_PASSWORD у .env}
+      TZ: Europe/Kyiv
+    command: >
+      postgres
+        -c shared_buffers=512MB
+        -c work_mem=32MB
+        -c maintenance_work_mem=256MB
+        -c max_connections=50
+        -c log_min_duration_statement=2000
+        -c timezone=Europe/Kyiv
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-comms} -d ${POSTGRES_DB:-comms}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  worker:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-comms}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-comms}
+      NOTION_TOKEN: ${NOTION_TOKEN:?задайте NOTION_TOKEN у .env}
+      NEWSCATCHER_V3_KEY: ${NEWSCATCHER_V3_KEY:-}
+      NEWSCATCHER_MAX_CALLS_PER_DAY: ${NEWSCATCHER_MAX_CALLS_PER_DAY:-60}
+      PIPELINE_VERSION: ${PIPELINE_VERSION:-dev}
+      BACKUP_DIR: /backups
+    volumes:
+      - ./data:/app/data          # кеш тіл Content Pulse і звіти воркера збагачення
+      - ./backups:/backups
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
+
+volumes:
+  pgdata:

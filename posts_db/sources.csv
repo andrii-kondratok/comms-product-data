@@ -1,0 +1,48 @@
+domain,name,category,lang,country,access,declared,articles_n,notes,access_src,extract_verdict,extract_ratio,rss_url
+united24media.com,United24 Media,ua_media,en,UA,open,yes,385,"Фактичне джерело №1 — більше за Reuters. Безкоштовне, без пейволу.",measured,full,1.06,
+reuters.com,Reuters,global,en,GB,antibot,yes,180,,measured,blocked_or_empty,0.0,
+nytimes.com,The New York Times,global,en,US,antibot,yes,160,,measured,blocked_or_empty,0.0,https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml
+ft.com,Financial Times,global,en,GB,antibot,yes,157,,measured,blocked_or_empty,0.0,https://ft.com/rss/
+theguardian.com,The Guardian,global,en,GB,open,yes,155,Без пейволу — надійне джерело повного тексту,measured,full,0.94,https://www.theguardian.com/europe/rss
+foreignaffairs.com,Foreign Affairs,analysis,en,US,open,yes,149,,measured,full,1.01,https://www.foreignaffairs.com/rss.xml
+telegraph.co.uk,The Telegraph,global,en,GB,antibot,yes,137,,measured,blocked_or_empty,0.0,
+thetimes.com,The Times,global,en,GB,hard_paywall,yes,131,,measured,teaser,0.02,
+economist.com,The Economist,global,en,GB,antibot,yes,125,,measured,blocked_or_empty,0.0,https://www.economist.com/europe/rss.xml
+kyivindependent.com,Kyiv Independent,ua_media,en,UA,open,yes,116,Membership; більшість матеріалів відкрита,measured,full,0.98,https://kyivindependent.com/news-archive/rss/
+bloomberg.com,Bloomberg,global,en,US,antibot,yes,113,,measured,blocked_or_empty,0.0,https://feeds.bloomberg.com/politics/news.rss
+wsj.com,The Wall Street Journal,global,en,US,antibot,yes,104,,measured,blocked_or_empty,0.0,https://feeds.a.dj.com/rss/RSSWorldNews.xml
+foreignpolicy.com,Foreign Policy,analysis,en,US,open,yes,101,,measured,full,2.63,https://foreignpolicy.com/rss
+politico.eu,Politico Europe,global,en,BE,open,yes,96,Основний сайт відкритий; Politico Pro — платний,measured,full,0.89,https://www.politico.eu/feed/
+washingtonpost.com,The Washington Post,global,en,US,antibot,yes,83,,measured,blocked_or_empty,0.0,https://feeds.washingtonpost.com/rss/world
+pravda.com.ua,Українська правда,ua_media,uk,UA,open,yes,82,Має публічний RSS,measured,full,1.1,https://pravda.com.ua/rss
+themoscowtimes.com,The Moscow Times,ru_media,en,RU,open,yes,74,,measured,full,1.53,https://www.themoscowtimes.com/rss/news
+edition.cnn.com,CNN,global,en,US,antibot,yes,66,,measured,blocked_or_empty,0.0,http://rss.cnn.com/rss/edition_world.rss
+politico.com,Politico,global,en,US,open,yes,54,,measured,full,0.85,https://rss.politico.com/politics-news.xml
+babel.ua,Бабель,ua_media,uk,UA,open,yes,51,,measured,full,0.69,https://babel.ua/rss.xml
+apnews.com,Associated Press,global,en,US,open,yes,49,,measured,full,0.71,
+theatlantic.com,The Atlantic,analysis,en,US,open,yes,48,,measured,full,30.08,https://theatlantic.com/feed/all/
+axios.com,Axios,global,en,US,open,yes,40,,measured,full,0.98,https://api.axios.com/feed/
+nationalinterest.org,The National Interest,analysis,en,US,open,no,22,"Використовується,  але не в списку",measured,full,1.18,
+life.pravda.com.ua,УП Життя,ua_media,uk,UA,open,no,22,Піддомен УП,measured,full,1.03,https://life.pravda.com.ua/rss
+eurointegration.com.ua,Європейська правда,ua_media,uk,UA,open,no,20,Має публічний RSS,measured,full,0.99,http://www.eurointegration.com.ua/rss/
+oboronka.mezha.ua,Оборонка (Mezha),ua_media,uk,UA,open,no,19,Оборонна тематика,measured,full,1.14,https://oboronka.mezha.ua/feed
+hromadske.ua,Громадське,ua_media,uk,UA,open,no,16,,measured,full,1.09,
+kse.ua,KSE,kse,en,UA,open,yes,15,,measured,full,1.01,
+theins.press,The Insider,ru_media,en,RU,open,no,14,,measured,full,0.96,https://theins.press/feed
+kyivpost.com,Kyiv Post,ua_media,en,UA,open,no,14,,measured,full,0.97,https://kyivpost.com/feed
+epravda.com.ua,Економічна правда,ua_media,uk,UA,open,no,10,,measured,full,1.02,https://epravda.com.ua/rss
+theins.ru,The Insider RU,ru_media,ru,RU,open,no,9,,measured,full,1.18,https://theins.ru/feed
+suspilne.media,Суспільне,ua_media,uk,UA,open,no,9,,measured,full,2.88,https://suspilne.media/rss/all.rss
+dw.com,Deutsche Welle,global,en,DE,open,no,9,,measured,full,0.95,https://rss.dw.com/rdf/rss-en-all
+scmp.com,South China Morning Post,global,en,HK,hard_paywall,yes,7,"Декларований,  майже не використовується",measured,partial,0.16,https://www.scmp.com/rss/feed
+meduza.io,Meduza,ru_media,ru,LV,open,no,7,,measured,full,1.23,https://meduza.io/rss/all
+spectator.com,The Spectator,analysis,en,US,open,no,4,,measured,full,0.96,https://spectator.org/feed/
+forbes.ua,Forbes Україна,ua_media,uk,UA,open,no,4,Просили додати — вже фактично використовується,measured,full,1.13,
+proftech.kse.ua,KSE ProfTech,kse,uk,UA,open,yes,3,,measured,full,0.96,
+zona.media,Медиазона,ru_media,ru,RU,open,no,2,,measured,over_extracted,11.52,https://zona.media/rss
+twz.com,The War Zone,analysis,en,US,open,no,2,,measured,full,0.96,https://www.twz.com/feed
+rbc.ua,РБК-Україна,ua_media,uk,UA,open,no,2,,measured,full,0.98,https://www.rbc.ua/static/rss/all.rus.rss.xml
+newyorker.com,The New Yorker,analysis,en,US,open,no,2,,measured,full,1.04,https://www.newyorker.com/feed/rss
+bbc.com,BBC,global,en,GB,open,no,0,Просили додати. За 2 908 статей не використовувалось жодного разу.,measured,full,0.99,https://feeds.bbci.co.uk/news/world/rss.xml
+foundation.kse.ua,KSE Foundation,kse,en,UA,open,yes,0,Зі списку Digest Layout,measured,full,0.98,https://foundation.kse.ua/rss
+gbs.kse.ua,KSE Graduate Business School,kse,uk,UA,unknown,yes,0,Зі списку Digest Layout,assumed,untested,,
