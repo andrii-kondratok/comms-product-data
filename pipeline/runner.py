@@ -24,11 +24,24 @@ log = logging.getLogger("pipeline")
 
 
 class Ctx:
-    """Те, що бачить задача: з'єднання, id прогону, лог."""
+    """Те, що бачить задача: з'єднання, id прогону, лог і дедлайн.
 
-    def __init__(self, con, run_id, job: str):
+    Задачі йдуть по черзі, тож задача, що затягнулась, блокує всі інші.
+    Дедлайн — із ops.job.timeout_minutes; довгі задачі перевіряють його самі
+    й зупиняються акуратно, закомітивши зроблене.
+    """
+
+    def __init__(self, con, run_id, job: str, timeout_minutes: int = 30):
         self.con, self.run_id, self.job = con, run_id, job
         self.log = logging.getLogger(f"pipeline.{job}")
+        self.deadline = time.time() + timeout_minutes * 60
+
+    def time_left(self) -> float:
+        return self.deadline - time.time()
+
+    def checkpoint(self) -> None:
+        """Закомітити зроблене: прогрес видно в базі й не губиться при обриві."""
+        self.con.commit()
 
 
 def _lock_key(job: str) -> int:
@@ -51,6 +64,12 @@ def run_job(job: str, trigger: str = "schedule") -> dict:
 
 def _run_locked(job: str, module, trigger: str) -> dict:
     with db.connect(autocommit=True) as con:
+        # Ми тримаємо блокування задачі, тож будь-який її «running» — мертвий прогін
+        con.execute("""UPDATE ops.run SET status='failed', finished_at=now(),
+                       error='перервано: процес зупинився, не завершивши прогін'
+                       WHERE job=%s AND status='running'""", (job,))
+        timeout = con.execute("SELECT timeout_minutes FROM ops.job WHERE job=%s",
+                              (job,)).fetchone()
         run_id = con.execute(
             """INSERT INTO ops.run (trigger, triggered_by, pipeline_version, job)
                VALUES (%s, %s, %s, %s) RETURNING run_id""",
@@ -62,7 +81,8 @@ def _run_locked(job: str, module, trigger: str) -> dict:
     started = time.time()
     try:
         with db.connect() as con:            # транзакція задачі
-            stats = module.run(Ctx(con, run_id, job)) or {}
+            ctx = Ctx(con, run_id, job, timeout["timeout_minutes"] if timeout else 30)
+            stats = module.run(ctx) or {}
             con.commit()
         status, error = "done", None
     except Exception as e:                                       # noqa: BLE001

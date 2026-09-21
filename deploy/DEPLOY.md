@@ -7,9 +7,12 @@
 ## Вимоги до сервера
 
 - Linux із Docker Engine і плагіном `docker compose`
-- 2 vCPU, 4 ГБ RAM, 40 ГБ диска. Зараз база займає ~1 ГБ, приріст ~1–2 ГБ на місяць
+- 4 vCPU, 8 ГБ RAM, 50 ГБ диска. Модель ембедингів bge-m3 займає ~2,5 ГБ пам'яті й
+  ~2,3 ГБ на диску (качається при першому запуску `score_topics` у `deploy/data/hf`).
+  База зараз ~1 ГБ, приріст ~1–2 ГБ на місяць
 - доступ у інтернет на 443 до `api.notion.com`, `v3-api.newscatcherapi.com`, `t.co`,
-  сайтів джерел і `pypi.org` / `files.pythonhosted.org` (для збірки)
+  сайтів джерел, `pypi.org` / `files.pythonhosted.org` / `download.pytorch.org` (для збірки)
+  і `huggingface.co` (модель ембедингів)
 
 ## 1. Код і дані на сервер
 
@@ -80,6 +83,7 @@ docker compose exec db psql -U comms -d comms -c "SELECT * FROM marts.pipeline_h
 | `fetch_articles` | кожні 30 хв | текст свіжих статей за каскадом із реєстру, з повторами |
 | `sync_notion` | кожні 15 хв | Post Metrics, Articles, Content Pulse — лише змінене |
 | `enrich_post_metrics` | кожні 15 хв | Post text і Source у Post Metrics |
+| `score_topics` | :15 і :45 | ембединги свіжих статей (pgvector) і найближчі теми редакції |
 | `link_posts` | щогодини, :40 | пари стаття → пост із явних посилань |
 | `reconcile_candidates` | щогодини, :50 | кандидат у дайджесті → `ingested` |
 | `backup` | 03:30 | `pg_dump` у `deploy/backups`, зберігається 14 днів |
@@ -105,6 +109,7 @@ ssh -L 5432:127.0.0.1:5432 user@SERVER
 - `marts.pipeline_health`: стан кожної задачі і скільки помилок поспіль
 - `marts.daily_intake`: скільки кандидатів і текстів прийшло за день по джерелах
 - `marts.api_usage_daily`: витрата запитів NewsCatcher проти ліміту
+- `marts.topic_queue`: свіжі статті з найближчою темою, цілями і прапорцем «вище порогу»
 
 Тривожні ознаки: `consecutive_failures >= 3` або `since_last_finish` більше за два
 інтервали розкладу.

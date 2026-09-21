@@ -24,6 +24,10 @@ def _load_dotenv() -> None:
 
 _load_dotenv()
 
+# Кеш моделей — у томі data, а не в домашній теці: модель ембедингів важить ~2,3 ГБ,
+# і на системному диску вона вже раз забила місце до нуля.
+os.environ.setdefault("HF_HOME", str(ROOT / "data" / "hf"))
+
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://comms:comms@localhost:5432/comms")
 NOTION_TOKEN = os.environ.get("NOTION_TOKEN", "")
 NEWSCATCHER_V3_KEY = os.environ.get("NEWSCATCHER_V3_KEY", "")

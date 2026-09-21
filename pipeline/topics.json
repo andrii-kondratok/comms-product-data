@@ -1,0 +1,396 @@
+{
+ "_source": "Notion: Operational programming + strategic objectives — розділи «Операційні рівні» та «Логіка OPS → STRAT» (редакція від 2026-03-27)",
+ "_note": "facets — короткі формулювання теми. Схожість статті з темою = максимум по фасетах: широка тема (війна) має кілька різних облич, і середнє їх розмило б. from_news=false — теми, що народжуються всередині офісу (донори, селфі, інтерв'ю ТМ); статтею ззовні їх не впіймати, тож у відборі новин вони не беруть участі.",
+ "goals": {
+  "ukraine_advocacy": {
+   "name_uk": "Адвокація України та висвітлення війни + зовнішня політика, яка стосується нас",
+   "pm_label": [
+    "Advocacy for Ukraine",
+    "Exposing Russia"
+   ]
+  },
+  "kse_advocacy": {
+   "name_uk": "Адвокація KSE як інституції",
+   "pm_label": [
+    "Advocacy for KSE",
+    "Science / Education"
+   ]
+  },
+  "personal_brand": {
+   "name_uk": "Розбудова особистого бренду",
+   "pm_label": [
+    "Personal Brand"
+   ]
+  },
+  "ethics": {
+   "name_uk": "Побудувати етичну рамку",
+   "pm_label": [
+    "Ethics"
+   ]
+  }
+ },
+ "topics": [
+  {
+   "id": 1,
+   "code": "kse_donors",
+   "block": "KSE",
+   "name_uk": "Донори (KSE Foundation)",
+   "from_news": false,
+   "goals": [
+    "kse_advocacy"
+   ],
+   "facets": [
+    "Donors fund Kyiv School of Economics scholarships and programs",
+    "Донори KSE Foundation підтримали навчання студентів"
+   ]
+  },
+  {
+   "id": 2,
+   "code": "kse_student_success",
+   "block": "KSE",
+   "name_uk": "Успіхи, історії студентів / викладачів / друзів KSE",
+   "from_news": false,
+   "goals": [
+    "ukraine_advocacy",
+    "kse_advocacy"
+   ],
+   "facets": [
+    "Kyiv School of Economics student wins international award",
+    "Історія успіху студента чи викладача Київської школи економіки"
+   ]
+  },
+  {
+   "id": 3,
+   "code": "kse_research",
+   "block": "KSE",
+   "name_uk": "Репорти KSE Institute / дослідження KSE",
+   "from_news": true,
+   "goals": [
+    "kse_advocacy"
+   ],
+   "facets": [
+    "KSE Institute report estimates war damage to Ukraine's infrastructure",
+    "Kyiv School of Economics research on Russian oil exports and sanctions",
+    "Дослідження KSE Institute: оцінка збитків і втрат України"
+   ]
+  },
+  {
+   "id": 4,
+   "code": "sanctions",
+   "block": "KSE",
+   "name_uk": "Санкції, як KSE залучена",
+   "from_news": true,
+   "goals": [
+    "ukraine_advocacy",
+    "kse_advocacy"
+   ],
+   "facets": [
+    "New EU sanctions package against Russia",
+    "Oil price cap and Russia's shadow fleet of tankers",
+    "Frozen Russian central bank assets used to fund Ukraine",
+    "Sanctions evasion through third countries, export controls on chips",
+    "Санкції проти Росії: цінова стеля на нафту, тіньовий флот, заморожені активи"
+   ]
+  },
+  {
+   "id": 5,
+   "code": "kse_campus",
+   "block": "KSE",
+   "name_uk": "Новий кампус",
+   "from_news": false,
+   "goals": [
+    "kse_advocacy"
+   ],
+   "facets": [
+    "Construction of the new Kyiv School of Economics campus",
+    "Новий кампус KSE: будівництво і життя студентів"
+   ]
+  },
+  {
+   "id": 6,
+   "code": "kse_in_media",
+   "block": "KSE",
+   "name_uk": "Цитування KSE в топ-виданнях, публікації людей KSE",
+   "from_news": true,
+   "goals": [
+    "kse_advocacy"
+   ],
+   "facets": [
+    "Kyiv School of Economics economists quoted in international media",
+    "According to the Kyiv School of Economics, Ukraine",
+    "Tymofiy Mylovanov, president of the Kyiv School of Economics, said"
+   ]
+  },
+  {
+   "id": 7,
+   "code": "stem_econ_leadership",
+   "block": "KSE",
+   "name_uk": "Лідерство в інженерії, математиці, економіці",
+   "from_news": true,
+   "goals": [
+    "kse_advocacy"
+   ],
+   "facets": [
+    "Ukrainian students win international mathematics olympiad",
+    "Лідерство в інженерії, математиці та економічній освіті в Україні",
+    "Ukrainian students win olympiad in mathematics, physics or programming"
+   ]
+  },
+  {
+   "id": 8,
+   "code": "army_support",
+   "block": "KSE",
+   "name_uk": "Армія (Хартія, допомога військовим, викладачі-військові)",
+   "from_news": true,
+   "goals": [
+    "ukraine_advocacy",
+    "kse_advocacy"
+   ],
+   "facets": [
+    "Charter of Ukrainian universities supports the military",
+    "Volunteers and universities help Ukrainian soldiers with equipment",
+    "Teachers and professors serving in the Armed Forces of Ukraine"
+   ]
+  },
+  {
+   "id": 9,
+   "code": "ua_domestic_politics",
+   "block": "Політика/економіка/війна",
+   "name_uk": "Внутрішня політика в Україні",
+   "from_news": true,
+   "goals": [],
+   "facets": [
+    "Corruption investigation into Ukrainian officials by NABU",
+    "Ukrainian parliament vote, government reshuffle in Kyiv",
+    "Attack on Ukrainian activist, political scandal inside Ukraine",
+    "Розслідування корупції, хабарі, внутрішня політика в Україні"
+   ]
+  },
+  {
+   "id": 10,
+   "code": "foreign_policy",
+   "block": "Політика/економіка/війна",
+   "name_uk": "Зовнішня політика (США, Росія, Китай, Європа, Україна в глоб. контексті)",
+   "from_news": true,
+   "goals": [
+    "ukraine_advocacy"
+   ],
+   "facets": [
+    "Trump administration policy on Ukraine and Russia peace talks",
+    "European Union leaders agree on support for Ukraine",
+    "China's role in Russia's war economy and relations with the West",
+    "NATO allies, defense spending and security guarantees for Ukraine",
+    "Ceasefire negotiations between Ukraine and Russia",
+    "Iran and the United States: war, ceasefire, Strait of Hormuz",
+    "US-China relations, Xi Jinping and Beijing's strategy",
+    "European politics: Hungary, Orban and Magyar, populist governments, elections",
+    "Pentagon and US defense secretary, American military posture in Europe",
+    "Corruption trial or scandal of a European political leader",
+    "Великі гравці світової політики: США, Китай, Іран, ЄС — і що це означає для України"
+   ]
+  },
+  {
+   "id": 11,
+   "code": "war_in_ukraine",
+   "block": "Політика/економіка/війна",
+   "name_uk": "Війна в Україні (досягнення, атаки РФ, оборонка)",
+   "from_news": true,
+   "goals": [
+    "ukraine_advocacy"
+   ],
+   "facets": [
+    "Russian missile and drone attack on Kyiv overnight",
+    "Ukrainian forces on the front line near Pokrovsk",
+    "Ukraine's defense industry produces long-range drones",
+    "Ukrainian drone strike on a Russian oil refinery",
+    "Russian war crimes against civilians in occupied territories"
+   ]
+  },
+  {
+   "id": 12,
+   "code": "russian_economy",
+   "block": "Політика/економіка/війна",
+   "name_uk": "Стан економіки РФ",
+   "from_news": true,
+   "goals": [
+    "ukraine_advocacy"
+   ],
+   "facets": [
+    "Russia's budget deficit widens as oil and gas revenues fall",
+    "Bank of Russia key interest rate, inflation and ruble",
+    "Russian economy slows, labor shortage and war spending",
+    "Стан російської економіки: дефіцит бюджету, інфляція, рубль"
+   ]
+  },
+  {
+   "id": 13,
+   "code": "life_content",
+   "block": "Особистий бренд",
+   "name_uk": "Life content (відрядження, зустрічі, будні президента KSE)",
+   "from_news": false,
+   "goals": [
+    "kse_advocacy",
+    "personal_brand"
+   ],
+   "facets": [
+    "Business trip and meetings of the KSE president"
+   ]
+  },
+  {
+   "id": 14,
+   "code": "tm_interviews",
+   "block": "Особистий бренд",
+   "name_uk": "Інтерв'ю й виступи Тимофія",
+   "from_news": true,
+   "goals": [
+    "ukraine_advocacy",
+    "kse_advocacy",
+    "personal_brand"
+   ],
+   "facets": [
+    "Interview with Tymofiy Mylovanov on CNN or BBC",
+    "Тимофій Милованов в інтерв'ю про економіку і війну"
+   ]
+  },
+  {
+   "id": 15,
+   "code": "stakeholders",
+   "block": "Особистий бренд",
+   "name_uk": "Stakeholder management (уряд, партнери)",
+   "from_news": false,
+   "goals": [
+    "kse_advocacy",
+    "personal_brand"
+   ],
+   "facets": [
+    "Meeting with Ukrainian government ministers and partners"
+   ]
+  },
+  {
+   "id": 16,
+   "code": "scandals",
+   "block": "Особистий бренд",
+   "name_uk": "Скандали",
+   "from_news": true,
+   "goals": [
+    "kse_advocacy",
+    "personal_brand",
+    "ethics"
+   ],
+   "facets": [
+    "Public scandal and controversy involving a Ukrainian official or institution",
+    "Скандал у соцмережах, публічний конфлікт"
+   ]
+  },
+  {
+   "id": 17,
+   "code": "universities",
+   "block": "Академічне середовище",
+   "name_uk": "Хвалимо чи позоримо інші університети",
+   "from_news": true,
+   "goals": [
+    "kse_advocacy",
+    "ethics"
+   ],
+   "facets": [
+    "Ukrainian university rector, higher education reform in Ukraine",
+    "Університети України: рейтинг, ректор, реформа вищої освіти",
+    "Ukrainian universities: rectors, admission campaign, reform of higher education in Ukraine"
+   ]
+  },
+  {
+   "id": 18,
+   "code": "academic_integrity",
+   "block": "Академічне середовище",
+   "name_uk": "Корупція, антиплагіат, академічна доброчесність",
+   "from_news": true,
+   "goals": [
+    "kse_advocacy",
+    "ethics"
+   ],
+   "facets": [
+    "Plagiarism in a dissertation by a Ukrainian official",
+    "Academic integrity, fake diplomas and degree mills",
+    "Хабарі в університеті, плагіат, академічна доброчесність"
+   ]
+  },
+  {
+   "id": 19,
+   "code": "human_stories",
+   "block": "Content mix",
+   "name_uk": "Історії людей",
+   "from_news": true,
+   "goals": [
+    "ukraine_advocacy",
+    "ethics"
+   ],
+   "facets": [
+    "Personal story of a Ukrainian soldier returning from Russian captivity",
+    "Ukrainian teenagers deported to Russia and returned home",
+    "A woman pilot, a medic, a family living through the war",
+    "Історія людини: полон, фронт, життя під обстрілами"
+   ]
+  },
+  {
+   "id": 20,
+   "code": "gratitude_wins",
+   "block": "Content mix",
+   "name_uk": "Подяка і «переможка»",
+   "from_news": true,
+   "goals": [
+    "ukraine_advocacy",
+    "ethics"
+   ],
+   "facets": [
+    "Ukrainian scientist wins a prestigious international prize",
+    "Ukrainian achievement recognised worldwide, Fields medal, historian award",
+    "Перемога українця: міжнародна премія, визнання",
+    "Ukrainian achievement: award, record or recognition won by a Ukrainian"
+   ]
+  },
+  {
+   "id": 21,
+   "code": "ai_education",
+   "block": "Content mix",
+   "name_uk": "ШІ в освіті/навчанні",
+   "from_news": true,
+   "goals": [
+    "kse_advocacy"
+   ],
+   "facets": [
+    "Artificial intelligence changes how students learn and universities teach",
+    "AI companies, large language models and the future of work",
+    "Штучний інтелект в освіті"
+   ]
+  },
+  {
+   "id": 22,
+   "code": "interesting_ideas",
+   "block": "Content mix",
+   "name_uk": "Цікаві теми (критичне мислення, ідеї, книги)",
+   "from_news": true,
+   "goals": [
+    "ukraine_advocacy",
+    "ethics"
+   ],
+   "facets": [
+    "Critical thinking, misinformation and why people believe myths",
+    "Economic idea explained: inequality trap, industrial policy, reshoring factories",
+    "Book or essay on society, history and human behaviour"
+   ]
+  },
+  {
+   "id": 23,
+   "code": "science",
+   "block": "Content mix",
+   "name_uk": "Наука",
+   "from_news": true,
+   "goals": [
+    "ethics"
+   ],
+   "facets": [
+    "Ukrainian scientists and research published by Ukrainian researchers"
+   ]
+  }
+ ]
+}

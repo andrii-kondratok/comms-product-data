@@ -24,7 +24,7 @@ DELAY = 1.2
 
 def extract(url: str) -> tuple:
     import trafilatura                     # важкий імпорт — лише тут
-    st, body = http_get(url)
+    st, body = http_get(url, timeout=15)
     if st != 200 or not body:
         return st, ""
     text = trafilatura.extract(body.decode("utf-8", "replace"), include_comments=False,
@@ -54,6 +54,7 @@ def run(ctx) -> dict:
         con.execute("UPDATE ops.candidate_pool SET article_id=%s WHERE candidate_id=%s",
                     (aid, c["candidate_id"]))
         stats["new_articles"] += 1
+    ctx.checkpoint()
 
     # 2. черга: pending + повтори, чий час настав
     queue = con.execute("""
@@ -93,6 +94,9 @@ def run(ctx) -> dict:
         for q in step:
             if q["fetch_cascade"][pos] != "own_extractor" or q["article_id"] in done:
                 continue
+            if ctx.time_left() < 60:          # решту черги візьме наступний запуск
+                stats["stopped_by_deadline"] = True
+                return stats
             st, text = extract(q["url"])
             v = articles.record(con, q["article_id"], method="own_extractor", text=text,
                                 run_id=ctx.run_id, http_status=st, verified=True,
@@ -100,6 +104,7 @@ def run(ctx) -> dict:
             stats[{"full": "full", "teaser": "teaser"}.get(v, "blocked")] += 1
             if v == "full":
                 done.add(q["article_id"])
+            ctx.checkpoint()
             time.sleep(DELAY)
         pending = [q for q in pending if q["article_id"] not in done]
     return stats
