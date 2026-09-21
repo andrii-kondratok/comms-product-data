@@ -18,6 +18,10 @@ EVENT_SIM = 0.80          # ознака «розмір події» — так 
 # саміт Трампа і Сі), різні сюжети близької теми — 0.60–0.68. 0.80 пропускало
 # п'ять статей про ті самі вибори.
 DEDUP_SIM = 0.70
+# Між мовами схожість нижча навіть для однакового змісту. Виміряно 21.09: та сама
+# подія англ./укр./рос. — 0.657–0.698 (заява Путіна про Європу, вибори, зустріч
+# Зеленського й Трампа), різні події — 0.650 і нижче.
+DEDUP_SIM_CROSS = 0.655
 KNN = 10
 COVERED_DAYS = 3
 SRC_SMOOTH = 20           # джерело з кількома статтями не отримує крайніх значень
@@ -114,11 +118,20 @@ def feature_names(ref) -> list:
              "log_event_size", "lang_uk", "lang_ru", "lang_en", "src_rate"])
 
 
-def _lang(t: str):
-    cyr = sum(("а" <= c.lower() <= "я") or c in "іїєґІЇЄҐ" for c in t)
+def lang_of(t: str) -> str:
+    """uk / ru / en за заголовком. Кирилиця без і/ї/є/ґ — російська: заголовки rbc.ua
+    на кшталт «Европа может не отразить…» не мають ы/э/ъ/ё і раніше йшли як українські."""
+    t = t or ""
+    cyr = sum(("а" <= c.lower() <= "я") or c.lower() in "іїєґёыэъ" for c in t)
     lat = sum("a" <= c.lower() <= "z" for c in t)
-    ru = bool(re.search(r"[ыэъё]", t.lower()))
-    return [float(cyr > lat and not ru), float(ru), float(lat >= cyr)]
+    if lat >= cyr:
+        return "en"
+    return "uk" if re.search(r"[іїєґ]", t.lower()) else "ru"
+
+
+def _lang(t: str):
+    l = lang_of(t)
+    return [float(l == "uk"), float(l == "ru"), float(l == "en")]
 
 
 def source_rates(con, before_day) -> dict:
@@ -167,11 +180,16 @@ def features(con, rows, E, ref):
     return X, per_topic, event
 
 
-def dedup_top(order, E, k=20, sim=DEDUP_SIM):
+def same_event(E, langs, i, j) -> bool:
+    lim = DEDUP_SIM if langs[i] == langs[j] else DEDUP_SIM_CROSS
+    return float(E[i] @ E[j]) >= lim
+
+
+def dedup_top(order, E, langs, k=20):
     """Жадібно: найкращий кандидат, далі — лише ті, що не про вже взяту подію."""
     picked = []
     for i in order:
-        if all(float(E[i] @ E[j]) < sim for j in picked):
+        if not any(same_event(E, langs, i, j) for j in picked):
             picked.append(i)
             if len(picked) == k:
                 break

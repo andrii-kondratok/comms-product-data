@@ -50,9 +50,10 @@ def run(ctx) -> dict:
     s = np.where(routine, -1.0, s)
 
     order = [i for i in np.argsort(-s) if s[i] >= 0]
-    picked = ranker.dedup_top(order, E, TOP)
+    langs = [ranker.lang_of(r["title"]) for r in rows]
+    picked = ranker.dedup_top(order, E, langs, TOP)
     # скільки статей дня злилось у кожен пункт топу: «про це пишуть N видань»
-    group = [int(((E @ E[i]) >= ranker.DEDUP_SIM).sum()) for i in picked]
+    group = [sum(ranker.same_event(E, langs, i, j) for j in range(len(rows))) for i in picked]
     now = datetime.now(timezone.utc)
     for rank, (i, g) in enumerate(zip(picked, group), 1):
         con.execute("""INSERT INTO ml.daily_pick (day, candidate_id, rank, score, topic_code,
