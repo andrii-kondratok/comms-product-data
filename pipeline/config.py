@@ -28,7 +28,9 @@ _load_dotenv()
 # і на системному диску вона вже раз забила місце до нуля.
 os.environ.setdefault("HF_HOME", str(ROOT / "data" / "hf"))
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://comms:comms@localhost:5432/comms")
+# 127.0.0.1, а не localhost: на Windows з Docker Desktop localhost спершу пробує IPv6
+# і висить 130 с до таймауту на кожне з'єднання. На сервері адреса інша (db).
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://comms:comms@127.0.0.1:5432/comms")
 NOTION_TOKEN = os.environ.get("NOTION_TOKEN", "")
 NEWSCATCHER_V3_KEY = os.environ.get("NEWSCATCHER_V3_KEY", "")
 PIPELINE_VERSION = os.environ.get("PIPELINE_VERSION", "dev")

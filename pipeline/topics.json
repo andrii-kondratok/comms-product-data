@@ -199,11 +199,11 @@
     "ukraine_advocacy"
    ],
    "facets": [
-    "Russian missile and drone attack on Kyiv overnight",
     "Ukrainian forces on the front line near Pokrovsk",
     "Ukraine's defense industry produces long-range drones",
     "Ukrainian drone strike on a Russian oil refinery",
-    "Russian war crimes against civilians in occupied territories"
+    "Russian war crimes against civilians in occupied territories",
+    "Russia's war strategy and its cost: scale of the air campaign, losses, what changes on the battlefield"
    ]
   },
   {
@@ -392,5 +392,24 @@
     "Ukrainian scientists and research published by Ukrainian researchers"
    ]
   }
+ ],
+ "_routine_note": "routine — антитеми: новини, що повторюються щодня й самі по собі не дають приводу для коментаря ТМ. Стаття, ближча до рутини, ніж до своєї теми, не проходить відбір.",
+ "routine": [
+  "Russian overnight shelling killed people and injured others in a Ukrainian region",
+  "Overnight drone and missile attack: casualties, damaged buildings, fires",
+  "Russian strike on a Ukrainian city kills civilians, rescuers at the scene",
+  "Air raid alert in several regions of Ukraine",
+  "Ukraine's air force says it shot down drones overnight",
+  "Внаслідок нічного обстрілу загинули та поранені люди, пошкоджено будинки",
+  "Росіяни обстріляли область: загиблі, поранені, пошкоджена інфраструктура",
+  "Повітряна тривога, збито безпілотники за ніч",
+  "Ночью российские войска атаковали, есть погибшие и раненые",
+  "Road accident, car crash, fire, weather forecast, local news",
+  "Celebrity news, sports results, lifestyle and entertainment",
+  "Russian attacks kill at least 6, wound 38 across Ukraine over the past day",
+  "Russian drones hit homes and a shopping center in a Ukrainian city, injuring civilians",
+  "Daily update: Russia loses troops, artillery systems and drones in one day, General Staff figures",
+  "Ukraine war latest: overnight attacks, casualties and damage in several regions",
+  "Генштаб: втрати ворога за добу, кількість боєзіткнень на напрямках"
  ]
 }

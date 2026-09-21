@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 
@@ -35,8 +36,20 @@ def vec(v) -> str:
     return "[" + ",".join(f"{x:.6f}" for x in v) + "]"
 
 
+def taxonomy_version(d: dict) -> str:
+    """Хеш усього, що впливає на бали: фасети тем і антитеми рутини."""
+    key = json.dumps({"topics": [(t["code"], t["from_news"], t["facets"]) for t in d["topics"]],
+                      "routine": d.get("routine", []), "model": MODEL_NAME},
+                     ensure_ascii=False, sort_keys=True)
+    return hashlib.sha1(key.encode()).hexdigest()[:10]
+
+
 def sync_topics(con) -> dict:
-    """topics.json → core.topic / topic_goal / topic_facet. Ембединги лише для нових фасетів."""
+    """topics.json → core.topic / topic_goal / topic_facet / routine_facet.
+
+    Ембединги рахуються лише для нових формулювань. Версія таксономії пишеться
+    в ml.topic_threshold: вітрина показує бали лише поточної версії.
+    """
     d = json.load(TOPICS_FILE.open(encoding="utf-8"))
     for code, g in d["goals"].items():
         con.execute("""INSERT INTO core.strategic_goal (goal_code, name_uk, pm_labels)
@@ -69,5 +82,21 @@ def sync_topics(con) -> dict:
         for (code, text), e in zip(new, encode([t for _, t in new])):
             con.execute("""INSERT INTO core.topic_facet (topic_code, text, model, embedding)
                            VALUES (%s,%s,%s,%s::vector)""", (code, text, MODEL_NAME, vec(e)))
+    # антитеми рутини
+    r_wanted = set(d.get("routine", []))
+    r_have = {r["text"] for r in con.execute(
+        "SELECT text FROM core.routine_facet WHERE model=%s", (MODEL_NAME,))}
+    for text in r_have - r_wanted:
+        con.execute("DELETE FROM core.routine_facet WHERE text=%s AND model=%s", (text, MODEL_NAME))
+    r_new = sorted(r_wanted - r_have)
+    if r_new:
+        for text, e in zip(r_new, encode(r_new)):
+            con.execute("""INSERT INTO core.routine_facet (text, model, embedding)
+                           VALUES (%s,%s,%s::vector)""", (text, MODEL_NAME, vec(e)))
+
+    version = taxonomy_version(d)
+    con.execute("UPDATE ml.topic_threshold SET taxonomy_version=%s WHERE model=%s",
+                (version, MODEL_NAME))
     return {"topics": len(codes), "facets_added": len(new),
-            "facets_removed": len(have - wanted)}
+            "facets_removed": len(have - wanted), "routine_added": len(r_new),
+            "taxonomy_version": version}
