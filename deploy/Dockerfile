@@ -17,7 +17,7 @@ RUN python3 -m venv --system-site-packages /opt/venv \
  && if [ "$INSTALL_EXTRACTOR" = "1" ]; then /opt/venv/bin/pip install --no-cache-dir "trafilatura>=2.0,<3"; fi \
  && if [ "$INSTALL_EMBEDDINGS" = "1" ]; then \
       /opt/venv/bin/pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch \
-   && /opt/venv/bin/pip install --no-cache-dir "sentence-transformers>=3,<7"; fi
+   && /opt/venv/bin/pip install --no-cache-dir "sentence-transformers>=3,<7" "scikit-learn>=1.4,<2"; fi
 
 ENV PATH=/opt/venv/bin:$PATH \
     PYTHONUNBUFFERED=1 PYTHONIOENCODING=utf-8 PYTHONUTF8=1 TZ=Europe/Kyiv

@@ -84,6 +84,8 @@ docker compose exec db psql -U comms -d comms -c "SELECT * FROM marts.pipeline_h
 | `sync_notion` | кожні 15 хв | Post Metrics, Articles, Content Pulse — лише змінене |
 | `enrich_post_metrics` | кожні 15 хв | Post text і Source у Post Metrics |
 | `score_topics` | :15 і :45 | ембединги свіжих статей (pgvector) і найближчі теми редакції |
+| `rank_daily` | щогодини, :55 | топ-20 дня: реранкер + відсікання рутини + дедуплікація подій |
+| `train_ranker` | понеділок, 04:00 | перенавчання реранкера на розмічених днях; активується, якщо не гірший за бал теми |
 | `link_posts` | щогодини, :40 | пари стаття → пост із явних посилань |
 | `reconcile_candidates` | щогодини, :50 | кандидат у дайджесті → `ingested` |
 | `backup` | 03:30 | `pg_dump` у `deploy/backups`, зберігається 14 днів |
@@ -110,6 +112,12 @@ ssh -L 5432:127.0.0.1:5432 user@SERVER
 - `marts.daily_intake`: скільки кандидатів і текстів прийшло за день по джерелах
 - `marts.api_usage_daily`: витрата запитів NewsCatcher проти ліміту
 - `marts.topic_queue`: свіжі статті з найближчою темою, цілями і прапорцем «вище порогу»
+- `marts.daily_top`: топ-20 дня (останній зріз) — головна вітрина для редактора
+- `ml.ranker_model`: версії реранкера, на яких днях навчені, метрики на відкладеному дні
+
+Після розгортання і завантаження історії реранкер треба навчити один раз вручну:
+`docker compose exec worker python -m pipeline run train_ranker`. Потрібно щонайменше
+два розмічені дні в пулі (дні, за які редакція вже щось взяла в дайджест).
 
 Тривожні ознаки: `consecutive_failures >= 3` або `since_last_finish` більше за два
 інтервали розкладу.
