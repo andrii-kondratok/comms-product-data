@@ -6,13 +6,17 @@
 **Розгортання на сервері — [deploy/DEPLOY.md](deploy/DEPLOY.md).** Там усе: вимоги,
 секрети, запуск, розклад задач, моніторинг.
 
+**Відбір статей (топ-30 дня) — [deploy/SELECTION.md](deploy/SELECTION.md):** як працює,
+як розгорнути, як налаштовувати оцінками. Результати перевірок — [docs/selection/](docs/selection/).
+
 ## Структура
 
 | Шлях | Що це |
 |---|---|
 | `db/migrations/` | схема Postgres. Кожна зміна — новий файл, застосовується автоматично |
 | `pipeline/` | щоденний конвеєр: планувальник і задачі (`pipeline/jobs/`) |
-| `deploy/` | Dockerfile, docker-compose, інструкція розгортання |
+| `deploy/` | Dockerfile, docker-compose, інструкції розгортання (`DEPLOY.md`, `SELECTION.md`) |
+| `docs/selection/` | результати перевірок відбору статей |
 | `postgres/` | разові скрипти вивантаження з Notion і воркер збагачення Post Metrics |
 | `posts_db/` | реєстр джерел (`sources.csv`), аналіз постів, скрипти дослідження |
 | `data-architecture.md` | архітектура даних і обґрунтування рішень |

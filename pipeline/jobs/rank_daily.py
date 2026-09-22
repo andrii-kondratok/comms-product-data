@@ -42,6 +42,10 @@ def run(ctx) -> dict:
     # а новини вчорашнього вечора ще актуальні.
     where = "c.first_seen_at >= now() - interval '36 hours'"
     n_emb = ranker.embed_candidates(con, where, ())
+    # Взірці для схожості: статті дайджесту й ті, що дали пост. На чистому сервері
+    # їх ще ніхто не рахував (раніше це робило лише навчання) — без них топ іде
+    # за самою темою. Перший раз ~3 тис. заголовків (кілька хвилин), далі лише нові.
+    n_hist = ranker.embed_history(con)
     ctx.checkpoint()
 
     ref = ranker.load_reference(con)
@@ -103,5 +107,6 @@ def run(ctx) -> dict:
                      ref["codes"][int(per_topic[i].argmax())], g,
                      m["version"], now))
     return {"day": str(today), "candidates": len(rows), "embedded": n_emb,
+            "history_embedded": n_hist,
             "routine_cut": int(routine.sum()), "stale": int(stale.sum()),
             "reference_good": ref["n_good"], "picked": len(picked), "model": m["version"]}

@@ -43,6 +43,7 @@ services:
       NEWSCATCHER_V3_KEY: ${NEWSCATCHER_V3_KEY:-}
       NEWSCATCHER_MAX_CALLS_PER_DAY: ${NEWSCATCHER_MAX_CALLS_PER_DAY:-60}
       PIPELINE_VERSION: ${PIPELINE_VERSION:-dev}
+      DAILY_TOP: ${DAILY_TOP:-30}
       BACKUP_DIR: /backups
     volumes:
       - ./data:/app/data          # кеш тіл Content Pulse і звіти воркера збагачення
