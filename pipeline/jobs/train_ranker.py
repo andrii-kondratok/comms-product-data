@@ -98,9 +98,9 @@ def run(ctx) -> dict:
 
     params = _fit(X, y, w)                   # фінальна модель — на всіх днях
     version = f"lr-{datetime.now():%Y%m%d-%H%M}"
-    better = metrics["auc"] >= metrics["auc_topic_only"]
-    if better:
-        con.execute("UPDATE ml.ranker_model SET is_active=false WHERE is_active")
+    # Сама не активується: 22.09 перевірка людиною показала, що на кількох днях модель
+    # вивчає випадкові особливості (від'ємна вага теми, джерела). Активація — вручну.
+    better = False
     con.execute("""INSERT INTO ml.ranker_model (version, embed_model, taxonomy_version, features,
                        params, train_days, holdout_day, metrics, is_active)
                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)""",

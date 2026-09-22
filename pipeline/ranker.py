@@ -94,11 +94,20 @@ def load_reference(con):
         FROM core.article a JOIN core.article_embedding e USING (article_id)
         WHERE a.notion_page_id IS NOT NULL
            OR EXISTS (SELECT 1 FROM core.article_post_link l WHERE l.article_id = a.article_id)""").fetchall()
+    # Статті, які людина позначила як добрі, — такий самий взірець, як статті, що дали
+    # пост. Датуються днем оцінки: на сам день не впливають, лише на наступні.
+    good = con.execute("""
+        SELECT DISTINCT ON (f.candidate_id) f.day AS d, e.embedding::text AS e
+        FROM feedback.pick_feedback f JOIN ml.candidate_embedding e USING (candidate_id)
+        WHERE f.verdict = 'good' ORDER BY f.candidate_id, f.created_at DESC""").fetchall()
+    hist = list(hist) + [{"d": g["d"], "in_digest": False, "has_post": True, "e": g["e"]}
+                         for g in good]
     return {
         "codes": codes, "owner": owner, "F": _arr(facets), "R": _arr(routine),
         "H": _arr(hist), "h_day": np.array([h["d"] for h in hist]),
         "h_digest": np.array([h["in_digest"] for h in hist], dtype=bool),
         "h_post": np.array([h["has_post"] for h in hist], dtype=bool),
+        "n_good": len(good),
     }
 
 
