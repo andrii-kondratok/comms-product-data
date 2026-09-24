@@ -24,7 +24,8 @@ RSS, sitemap, NewsCatcher ──► ops.candidate_pool          (discover_*, щ�
                      ▼
           бал = ½ тема + ½ взірці
                      │
-   свіжість ≤ 36 год · ≤ 5 статей на тему · одна стаття на подію
+   свіжість ≤ 24 год · одна стаття на подію · ≤ 5 статей на тему
+      · геть те, про що ми вже писали (той самий url)
                      ▼
               marts.daily_top  ──►  (за потреби) 🧾 Articles, статус Linked
 ```
@@ -33,6 +34,13 @@ RSS, sitemap, NewsCatcher ──► ops.candidate_pool          (discover_*, щ�
 23 операційні теми, кожна прив'язана до стратегічних цілей (адвокація України, адвокація
 KSE, особистий бренд, етична рамка). Шість тем, що народжуються всередині офісу (донори,
 кампус, life content…), у відборі новин не беруть участі.
+
+**«Ми про це вже писали».** Кандидат прибирається з топу, якщо з тієї самої статті
+(збіг `url_canonical`) вже є наш пост за 30 днів або вона вже лежить у дайджесті за
+7 днів. Перевірка точна, за посиланням, не за схожістю: калібрування показало, що
+схожість статті з нашим постом не відрізняє «вже писали» від «та сама тема, інша
+подія» — [05_coverage_eval.md](../docs/selection/05_coverage_eval.md). Що відсіялось,
+видно у `marts.covered_today`.
 
 **Одна подія — одна стаття.** Статті зливаються, якщо схожість ≥ 0.70 (однією мовою) або
 ≥ 0.655 (між англ./укр./рос. — переклад знижує схожість). Колонка `event_size` — скільки
@@ -48,13 +56,14 @@ KSE, особистий бренд, етична рамка). Шість тем,
 | Щогодинний топ | `pipeline/jobs/rank_daily.py` |
 | Теми для кожної свіжої статті | `pipeline/jobs/score_topics.py` |
 | Навчена модель (вимкнена) | `pipeline/jobs/train_ranker.py` |
-| Схема | `db/migrations/0003`–`0007` |
+| Схема | `db/migrations/0003`–`0008` |
 | Перенесення топу в Notion | `posts_db/push_top_to_notion.py` |
-| Перевірки | `posts_db/eval_topics.py`, `eval_threshold.py`, `eval_ranker.py`, `check_picks.py` |
+| Перевірки | `posts_db/eval_topics.py`, `eval_threshold.py`, `eval_ranker.py`, `eval_coverage.py`, `check_picks.py` |
 
 Таблиці: `core.topic`, `core.topic_facet`, `core.routine_facet`, `core.topic_goal`,
 `ml.candidate_embedding`, `ml.article_topic`, `ml.ranker_model`, `ml.daily_pick`,
-`feedback.pick_feedback`. Вітрини: `marts.daily_top`, `marts.topic_queue`.
+`ml.candidate_coverage`, `feedback.pick_feedback`. Вітрини: `marts.daily_top`,
+`marts.topic_queue`, `marts.covered_today`.
 
 ---
 
@@ -79,8 +88,9 @@ cd deploy && docker compose --env-file .env up -d --build
 docker compose logs -f worker     # «застосовано: [...0003..0007]» і «планувальник запущено»
 ```
 
-Міграції `0003`–`0007` застосовуються самі під час старту. Міграція `0007` вмикає
-прозору формулу `transparent-v1` як активну модель.
+Міграції `0003`–`0008` застосовуються самі під час старту. Міграція `0007` вмикає
+прозору формулу `transparent-v1` як активну модель, `0008` — перевірку «вже писали»
+і вікно свіжості 24 год.
 
 ### 3. Перший запуск — вручну, по черзі
 
@@ -161,7 +171,8 @@ WHERE p.day = current_date
 | Точніше описати тему | правити `facets` теми в `topics.json` |
 | Більше/менше однієї теми в топі | `params.topic_cap` у `ml.ranker_model` |
 | Вага теми проти взірців | `params.w_topic`, `params.w_knn` |
-| Вікно свіжості | `params.fresh_hours` |
+| Вікно свіжості | `params.fresh_hours` (зараз 24 год) |
+| Глибина пам'яті «вже писали» | `params.covered_post_days`, `covered_digest_days` |
 | Розмір топу | `DAILY_TOP` у `deploy/.env` |
 
 ```sql

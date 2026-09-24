@@ -27,24 +27,33 @@ PROC = Path(__file__).resolve().parent.parent / "data" / "processed"
 POST_CHARS = 700          # пост часто довгий тред; для порівняння беремо початок
 
 
-def embed_posts(con, limit: int) -> int:
+def embed_posts(con, limit: int, chunk: int = 256) -> int:
+    """Рахує партіями з комітом після кожної: одним викликом на тисячі текстів
+    процес падав без повідомлення. Спершу пости, що мають пару зі статтею, —
+    саме вони дають позитиви для калібрування, і прогін можна перервати будь-коли.
+    """
     rows = con.execute("""
-        SELECT post_id, coalesce(body_raw, hook_raw) AS text
-        FROM core.post
-        WHERE length(coalesce(body_raw, hook_raw, '')) >= 80
-          AND (posted_at IS NULL OR posted_at >= '2024-01-01')
-          AND NOT EXISTS (SELECT 1 FROM core.post_embedding e WHERE e.post_id = core.post.post_id)
-        ORDER BY posted_at DESC NULLS LAST
+        SELECT p.post_id, coalesce(p.body_raw, p.hook_raw) AS text,
+               EXISTS (SELECT 1 FROM core.article_post_link l
+                       WHERE l.post_id = p.post_id AND l.link_method = 'explicit_url') AS linked
+        FROM core.post p
+        WHERE length(coalesce(p.body_raw, p.hook_raw, '')) >= 80
+          AND (p.posted_at IS NULL OR p.posted_at >= '2024-01-01')
+          AND NOT EXISTS (SELECT 1 FROM core.post_embedding e WHERE e.post_id = p.post_id)
+        ORDER BY linked DESC, p.posted_at DESC NULLS LAST
         LIMIT %s""", (limit,)).fetchall()
-    if not rows:
-        return 0
-    E = embeddings.encode([r["text"][:POST_CHARS] for r in rows])
-    for r, e in zip(rows, E):
-        con.execute("""INSERT INTO core.post_embedding (post_id, model, embedding)
-                       VALUES (%s,%s,%s::vector) ON CONFLICT (post_id) DO NOTHING""",
-                    (r["post_id"], embeddings.MODEL_NAME, embeddings.vec(e)))
-    con.commit()
-    return len(rows)
+    done = 0
+    for i in range(0, len(rows), chunk):
+        part = rows[i:i + chunk]
+        E = embeddings.encode([r["text"][:POST_CHARS] for r in part])
+        for r, e in zip(part, E):
+            con.execute("""INSERT INTO core.post_embedding (post_id, model, embedding)
+                           VALUES (%s,%s,%s::vector) ON CONFLICT (post_id) DO NOTHING""",
+                        (r["post_id"], embeddings.MODEL_NAME, embeddings.vec(e)))
+        con.commit()
+        done += len(part)
+        print(f"  ембединги постів: {done}/{len(rows)}", flush=True)
+    return done
 
 
 def main() -> None:
@@ -75,15 +84,16 @@ def main() -> None:
     true_sim = (A * P).sum(axis=1)
 
     allP = ranker._arr(posts, "e")
-    pday = np.array([p["day"] for p in posts])
+    dated = [i for i, p in enumerate(posts) if p["day"] is not None]   # у частини постів дати немає
+    pday = np.array([posts[i]["day"] for i in dated])
     random.seed(11)
     rnd, week = [], []
     for i, pr in enumerate(pairs):
         j = random.randrange(len(posts))
         rnd.append(float(A[i] @ allP[j]))
-        if pr["day"] is not None:
-            same = np.where((pday != None) & (abs(pday - pr["day"]) <= np.timedelta64(7, "D")))[0]  # noqa: E711
-            same = [k for k in same if posts[k]["post_id"] != pr["post_id"]]
+        if pr["day"] is not None and len(pday):
+            near = np.where(abs(pday - pr["day"]) <= np.timedelta64(7, "D"))[0]
+            same = [dated[k] for k in near if posts[dated[k]]["post_id"] != pr["post_id"]]
             if same:
                 week.append(float((A[i] @ allP[same].T).max()))
     rnd, week = np.array(rnd), np.array(week)

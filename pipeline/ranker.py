@@ -78,22 +78,29 @@ def embed_history(con, limit: int = 20000) -> int:
 POST_CHARS = 700          # для порівняння беремо початок треду, не весь
 
 
-def embed_posts(con, limit: int = 8000) -> int:
-    """Ембединги наших опублікованих постів — довідник для «ми про це вже писали»."""
+def embed_posts(con, limit: int = 8000, chunk: int = 256) -> int:
+    """Ембединги наших опублікованих постів — довідник для «ми про це вже писали».
+
+    Партіями з комітом після кожної: одним викликом на тисячі текстів процес
+    падає без повідомлення, а перший запуск на сервері саме такий.
+    """
     rows = con.execute("""
         SELECT post_id, coalesce(body_raw, hook_raw) AS text FROM core.post
         WHERE length(coalesce(body_raw, hook_raw, '')) >= 80
           AND (posted_at IS NULL OR posted_at >= now() - interval '2 years')
           AND NOT EXISTS (SELECT 1 FROM core.post_embedding e WHERE e.post_id = core.post.post_id)
         ORDER BY posted_at DESC NULLS LAST LIMIT %s""", (limit,)).fetchall()
-    if not rows:
-        return 0
-    E = embeddings.encode([r["text"][:POST_CHARS] for r in rows])
-    for r, e in zip(rows, E):
-        con.execute("""INSERT INTO core.post_embedding (post_id, model, embedding)
-                       VALUES (%s,%s,%s::vector) ON CONFLICT (post_id) DO NOTHING""",
-                    (r["post_id"], embeddings.MODEL_NAME, embeddings.vec(e)))
-    return len(rows)
+    done = 0
+    for i in range(0, len(rows), chunk):
+        part = rows[i:i + chunk]
+        E = embeddings.encode([r["text"][:POST_CHARS] for r in part])
+        for r, e in zip(part, E):
+            con.execute("""INSERT INTO core.post_embedding (post_id, model, embedding)
+                           VALUES (%s,%s,%s::vector) ON CONFLICT (post_id) DO NOTHING""",
+                        (r["post_id"], embeddings.MODEL_NAME, embeddings.vec(e)))
+        con.commit()
+        done += len(part)
+    return done
 
 
 def coverage_by_url(con, rows, *, post_days: int, digest_days: int) -> dict:
