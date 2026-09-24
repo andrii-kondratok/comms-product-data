@@ -3,6 +3,11 @@
 Два види моделі в ml.ranker_model (params.kind):
   transparent — ½ відповідності темі + ½ схожості на взірці (статті, що дали пост,
                 і позначені людиною як добрі). Налаштовується оцінками, не вагами.
+
+Перед ранжуванням відсікається те, про що ми вже писали:
+  * за посиланням — точно: у статті з тим самим URL уже є наш пост або вона в дайджесті;
+  * за схожістю — коли `covered_vector` увімкнено (пороги з posts_db/eval_coverage.py);
+    поки вимкнено, бо поріг ще не відкалібровано.
   logreg      — навчена на виборі редакції. 22.09 перевірка людиною показала, що на
                 кількох днях вона вчить випадкові особливості (від'ємна вага теми,
                 Reuters топиться за джерелом), тож активується лише вручну.
@@ -36,20 +41,21 @@ def run(ctx) -> dict:
     m = con.execute("SELECT * FROM ml.ranker_model WHERE is_active").fetchone()
     if not m:
         return {"note": "немає активної моделі — спершу train_ranker"}
+    p = m["params"]
     topics = embeddings.sync_topics(con)
     today = con.execute("SELECT (now() AT TIME ZONE 'Europe/Kyiv')::date AS d").fetchone()["d"]
-    # Вікно — 36 годин, а не календарний день: о 9-й ранку «сьогодні» майже порожнє,
-    # а новини вчорашнього вечора ще актуальні.
+    # Вікно збору ширше за вікно свіжості: стаття може з'явитись у стрічці пізніше,
+    # ніж вийшла. Що старше за fresh_hours — відсіється нижче.
     where = "c.first_seen_at >= now() - interval '36 hours'"
     n_emb = ranker.embed_candidates(con, where, ())
     # Взірці для схожості: статті дайджесту й ті, що дали пост. На чистому сервері
     # їх ще ніхто не рахував (раніше це робило лише навчання) — без них топ іде
     # за самою темою. Перший раз ~3 тис. заголовків (кілька хвилин), далі лише нові.
     n_hist = ranker.embed_history(con)
+    n_posts = ranker.embed_posts(con) if p.get("covered_vector") else 0
     ctx.checkpoint()
 
     ref = ranker.load_reference(con)
-    p = m["params"]
     transparent = p.get("kind") == "transparent"
     if not transparent and ranker.feature_names(ref) != list(m["features"]):
         return {"note": "теми змінились після навчання — потрібен train_ranker",
@@ -73,6 +79,34 @@ def run(ctx) -> dict:
     rout = X[:, ranker.feature_names(ref).index("routine")]
     routine = rout >= tmax + (thr["routine_margin"] if thr else 0.08)
     s = np.where(routine, -9.0, s)
+
+    # «ми про це вже писали»: наші пости і статті, що вже в дайджесті
+    days = dict(post_days=p.get("covered_post_days", 30),
+                digest_days=p.get("covered_digest_days", 7))
+    cov = ranker.coverage_by_url(con, rows, **days)
+    if p.get("covered_vector"):
+        for cid, hit in ranker.coverage(con, rows, E, **days).items():
+            for kind, v in hit.items():
+                if kind not in cov[cid]:          # точний збіг важливіший за схожість
+                    cov[cid][kind] = v
+    covered = np.zeros(len(rows), dtype=bool)
+    limits = {"post": (p.get("covered_post_min", 0.80), "ref_post_id"),
+              "digest": (p.get("covered_digest_min", 0.80), "ref_article_id")}
+    for i, r in enumerate(rows):
+        for kind, (lim, col) in limits.items():
+            hit = cov[r["candidate_id"]].get(kind)
+            if not hit:
+                continue
+            sc, ref_id = hit          # не ref: так зветься довідник тем
+            con.execute(f"""INSERT INTO ml.candidate_coverage
+                            (candidate_id, kind, model, score, {col})
+                            VALUES (%s,%s,%s,%s,%s)
+                            ON CONFLICT (candidate_id, kind) DO UPDATE
+                            SET score = EXCLUDED.score, {col} = EXCLUDED.{col}, checked_at = now()""",
+                        (r["candidate_id"], kind, embeddings.MODEL_NAME, sc, ref_id))
+            if sc >= lim:
+                covered[i] = True
+    s = np.where(covered, -9.0, s)
     # свіжість: sitemap приносить і статті кількаденної давнини
     fresh_h = p.get("fresh_hours", 36)
     ages = con.execute("""SELECT candidate_id,
@@ -109,4 +143,5 @@ def run(ctx) -> dict:
     return {"day": str(today), "candidates": len(rows), "embedded": n_emb,
             "history_embedded": n_hist,
             "routine_cut": int(routine.sum()), "stale": int(stale.sum()),
+            "already_covered": int(covered.sum()), "posts_embedded": n_posts,
             "reference_good": ref["n_good"], "picked": len(picked), "model": m["version"]}

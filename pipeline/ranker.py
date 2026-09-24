@@ -75,6 +75,84 @@ def embed_history(con, limit: int = 20000) -> int:
     return len(rows)
 
 
+POST_CHARS = 700          # для порівняння беремо початок треду, не весь
+
+
+def embed_posts(con, limit: int = 8000) -> int:
+    """Ембединги наших опублікованих постів — довідник для «ми про це вже писали»."""
+    rows = con.execute("""
+        SELECT post_id, coalesce(body_raw, hook_raw) AS text FROM core.post
+        WHERE length(coalesce(body_raw, hook_raw, '')) >= 80
+          AND (posted_at IS NULL OR posted_at >= now() - interval '2 years')
+          AND NOT EXISTS (SELECT 1 FROM core.post_embedding e WHERE e.post_id = core.post.post_id)
+        ORDER BY posted_at DESC NULLS LAST LIMIT %s""", (limit,)).fetchall()
+    if not rows:
+        return 0
+    E = embeddings.encode([r["text"][:POST_CHARS] for r in rows])
+    for r, e in zip(rows, E):
+        con.execute("""INSERT INTO core.post_embedding (post_id, model, embedding)
+                       VALUES (%s,%s,%s::vector) ON CONFLICT (post_id) DO NOTHING""",
+                    (r["post_id"], embeddings.MODEL_NAME, embeddings.vec(e)))
+    return len(rows)
+
+
+def coverage_by_url(con, rows, *, post_days: int, digest_days: int) -> dict:
+    """Точна перевірка «вже писали» — за посиланням, без схожості.
+
+    Кандидат → стаття з тим самим url_canonical → чи є з неї наш пост
+    (core.article_post_link) і чи вона вже в дайджесті (notion_page_id).
+    Помилок тут не буває: це не схожість, а той самий матеріал.
+    """
+    ids = [r["candidate_id"] for r in rows]
+    out = {i: {} for i in ids}
+    for r in con.execute("""
+            SELECT c.candidate_id, l.post_id, p.posted_at
+            FROM ops.candidate_pool c
+            JOIN core.article a ON a.url_canonical = c.url_canonical
+            JOIN core.article_post_link l ON l.article_id = a.article_id
+            JOIN core.post p ON p.post_id = l.post_id
+            WHERE c.candidate_id = ANY(%s)
+              AND (p.posted_at IS NULL OR p.posted_at >= now() - make_interval(days => %s))""",
+            (ids, post_days)):
+        out[r["candidate_id"]]["post"] = (1.0, r["post_id"])
+    for r in con.execute("""
+            SELECT c.candidate_id, a.article_id
+            FROM ops.candidate_pool c
+            JOIN core.article a ON a.url_canonical = c.url_canonical
+            WHERE c.candidate_id = ANY(%s) AND a.notion_page_id IS NOT NULL
+              AND coalesce(a.published_at, a.ingested_at) >= now() - make_interval(days => %s)""",
+            (ids, digest_days)):
+        out[r["candidate_id"]]["digest"] = (1.0, r["article_id"])
+    return out
+
+
+def coverage(con, rows, E, *, post_days: int, digest_days: int) -> dict:
+    """Для кожного кандидата — найсхожіший наш пост і найсхожіша стаття дайджесту.
+
+    Повертає {candidate_id: {"post": (score, post_id), "digest": (score, article_id)}}.
+    """
+    posts = con.execute("""
+        SELECT p.post_id, e.embedding::text AS e FROM core.post p
+        JOIN core.post_embedding e USING (post_id)
+        WHERE p.posted_at >= now() - make_interval(days => %s)""", (post_days,)).fetchall()
+    arts = con.execute("""
+        SELECT a.article_id, e.embedding::text AS e FROM core.article a
+        JOIN core.article_embedding e USING (article_id)
+        WHERE a.notion_page_id IS NOT NULL
+          AND coalesce(a.published_at, a.ingested_at) >= now() - make_interval(days => %s)""",
+        (digest_days,)).fetchall()
+    out = {r["candidate_id"]: {} for r in rows}
+    for key, ref, id_col in (("post", posts, "post_id"), ("digest", arts, "article_id")):
+        if not ref:
+            continue
+        M = _arr(ref)
+        sims = E @ M.T
+        best = sims.argmax(axis=1)
+        for i, r in enumerate(rows):
+            out[r["candidate_id"]][key] = (float(sims[i, best[i]]), ref[int(best[i])][id_col])
+    return out
+
+
 def load_reference(con):
     """Топіки, рутина та історія (дата, дав пост, вектор)."""
     model = embeddings.MODEL_NAME
